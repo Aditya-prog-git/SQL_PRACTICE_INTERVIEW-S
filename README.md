@@ -124,7 +124,7 @@ Each file is a **problem sheet**, not a walkthrough.
 
 ## 📂 Repository Design
 
-<div align="center">
+<div align="left">
 
 ✅ Practice-oriented queries  
 ✅ No concept explanations  
