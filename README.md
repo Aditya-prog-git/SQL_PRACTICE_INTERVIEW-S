@@ -42,6 +42,54 @@ Each file is a **problem sheet**, not a walkthrough.
 
 ---
 
+## 🧠 Quick Recall — GROUP BY & Aggregations
+
+> One-glance rules to reset your brain before writing queries
+
+---
+
+### ✅ GROUP BY Rules (Simple & Sharp)
+
+- All **non-aggregated columns** in `SELECT` must appear in `GROUP BY`  
+  *(but not all `GROUP BY` columns must appear in `SELECT`)*
+
+- Columns inside **aggregate functions** do **NOT** need to be in `GROUP BY`
+
+- You **cannot use aggregate functions in `WHERE`**  
+  → use `HAVING` instead
+
+- Query execution order:
+FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY
+
+
+- Each group produces **exactly one row** in the result
+
+---
+
+### ✅ Aggregation Rules
+
+- Aggregate functions return **one value per group**
+
+- Aggregate functions **ignore NULL values**  
+*(except `COUNT(*)`)*
+
+- You **cannot mix aggregated and non-aggregated columns in `SELECT`**  
+without `GROUP BY`
+
+---
+
+### 🧠 One-line Memory Trick
+
+<div align="center">
+
+### `SELECT = GROUP BY columns + aggregate functions only`
+
+</div>
+
+<img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%">
+
+---
+
 ## ⚙️ Environment
 
 <div align="center">
