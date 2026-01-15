@@ -297,6 +297,16 @@ where d1.department_id != d2.department_id
 and d1.department_id < d2.department_id;
 
 -- *47. Find employees whose salary is above the median salary of the company.
+select name, salary from employees where salary > (
+	select avg(salary) from (
+		SELECT * ,
+			row_number() OVER(order by salary) as rnk,
+			count(*) over() as cnt
+		from employees
+	)t where t.rnk in (floor((t.cnt+1)/2), ceil((t.cnt+1)/2))
+);
+
+
 with ordered as(
 	select salary, 
 		row_number() over(order by salary) as rnk,
@@ -314,13 +324,24 @@ inner join median_salary m
 	on e.salary > m.median_salary;
 
 -- 48. Retrieve the department names which have employees with salaries in the top 10% of all salaries.
+SELECT * FROM (
+	SELECT * ,
+		PERCENT_RANK() OVER(ORDER BY salary DESC) AS pct_rnk
+	FROM employees 
+	
+)t WHERE t.pct_rnk <= 0.10;
 
 -- 49. Find the average salary of the departments which have more than five employees earning above the overall average salary.
-select department_id, avg(salary) from (
-	select id, department_id, salary from employees where salary > (
-		select avg(salary) from employees
+SELECT department_id, AVG(salary)
+FROM (
+	SELECT id, department_id,salary
+	FROM employees 
+	WHERE salary > (
+		SELECT AVG(salary) 
+		FROM employees
 	)
-)r group by department_id having count(id) > 5;
+)T GROUP BY department_id 
+HAVING COUNT(id) > 5;
 
 -- 50. Retrieve employees who have the same name as their manager.
 select e1.id as emp_id, e1.name as emp_name, e2.name as manager_name
@@ -347,6 +368,18 @@ inner join dept_avg a
    and a.department_id <> b.department_id;
 
 -- 52. Find the employee who has the closest salary to the company's median salary but doesn't earn the median salary.
+	-- SUBQUERY WAY 
+SELECT id, name, salary 
+FROM employees 
+WHERE salary <> (
+	SELECT AVG(t.salary) FROM (
+		SELECT * , 
+			ROW_NUMBER() OVER(ORDER BY salary ASC) AS rnk,
+			COUNT(*) OVER() AS cnt
+		FROM employees
+	)t WHERE t.rnk IN (FLOOR((t.cnt+1)/2), CEIL((t.cnt+1)/2))
+);
+	-- WINDOW FUNCTION WAY
 with ordered_salary as (
     select id, salary,
            row_number() over(order by salary) as rnk,
@@ -376,6 +409,27 @@ where d.total_salary > (
 );
 
 -- 55. Identify departments that have less than the company-wide median number of employees.
+	-- Using Subquery
+SELECT s.department_id 
+FROM (
+	SELECT department_id, COUNT(*) AS emp_count
+	FROM employees
+	GROUP BY department_id
+)s
+WHERE s.emp_count < (
+	SELECT AVG(emp_count) AS median_emp_count
+    FROM(
+		SELECT r.* , 
+			ROW_NUMBER() OVER(ORDER BY emp_count) AS rnk,
+            COUNT(*) OVER() as cnt
+		FROM (
+			SELECT department_id, COUNT(*) AS emp_count
+			FROM employees
+			GROUP BY department_id
+        )r
+	)t WHERE t.rnk IN (FLOOR((t.cnt+1)/2), CEIL((t.cnt+1)/2))
+);
+	-- Using CTE's
 with dept_group as (
     select department_id, count(*) as cnt
     from employees
@@ -550,6 +604,7 @@ from employees e inner join (
 	)t where rnk = 2
 ) r on e.department_id = r.department_id
 where e.salary > r.salary;
+
 	-- MORE EFFICIENT WAY
 select id, name, salary from (
 	select e.id, e.name, e.salary, 
@@ -762,4 +817,14 @@ select distinct e.name from employees e
 inner join projects p on e.id = p.EmpID
 where e.department_id is null;
 
--- 93. Find employees who are working on projects across different departments. (e.g., employee belongs to IT but also has projects under employees from HR/Finance.)
+-- *93. Find employees who are working on projects across different departments. (e.g., employee belongs to IT but also has projects under employees from HR/Finance.)
+SELECT DISTINCT e1.id, e1.name, e1.department_id
+FROM Projects p1
+JOIN Projects p2
+    ON p1.ProjectID = p2.ProjectID
+   AND p1.EmpID <> p2.EmpID
+JOIN employees e1
+    ON p1.EmpID = e1.id
+JOIN employees e2
+    ON p2.EmpID = e2.id
+WHERE e1.department_id <> e2.department_id;
