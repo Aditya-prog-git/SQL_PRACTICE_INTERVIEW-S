@@ -83,7 +83,7 @@ without `GROUP BY`
 <div align="center">
 
 ### `SELECT = GROUP BY columns + aggregate functions only`
-
+### `Never use GROUP BY in the same SELECT where you use window functions on raw columns`
 </div>
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%">
