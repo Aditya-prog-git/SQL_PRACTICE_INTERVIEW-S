@@ -79,6 +79,16 @@ SELECT * FROM (
 )t WHERE t.rnk = 1;
 
 -- 2. Customers whose 2nd completed order value > 1st.
+
+SELECT customer_id, first_order, order_date, prev_order
+FROM(
+	SELECT customer_id, order_amount AS first_order, order_date,
+		ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY order_date) AS rnk,
+		LAG(order_amount) OVER(PARTITION BY customer_id ORDER BY order_date) AS prev_order
+	FROM food_orders
+    WHERE order_status = "completed"
+)t WHERE t.rnk = 2 AND t.prev_order < t.first_order;
+
 WITH completed_orders AS (
 	SELECT * 
     FROM food_orders
@@ -86,14 +96,14 @@ WITH completed_orders AS (
 ),
 ranked_completed_orders AS (
 	SELECT * ,
-		ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY order_date DESC) AS rnk
+		ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY order_date) AS rnk
 	FROM completed_orders
 )
 SELECT o.customer_id, o.order_amount, o.rnk, t.order_amount, t. rnk
 FROM ranked_completed_orders o
 INNER JOIN ranked_completed_orders t
 	ON o.customer_id = t.customer_id AND o.rnk = 1 AND t.rnk = 2 AND t.order_amount > o.order_amount;
-    
+
 -- 3. Customers inactive in the last 30 days.
 SELECT *
 FROM food_orders
@@ -176,7 +186,6 @@ GROUP BY city;
 
 
 
-
 -- 7. Customers who ordered 3+ times in a month.
 SELECT customer_id , COUNT(*) AS order_count
 FROM food_orders
@@ -198,16 +207,9 @@ FROM food_orders
 GROUP BY MONTH(order_date);
 
 -- 10. Use LAG to compare a customer’s current vs previous order amount.
-select * from(
-	SELECT * ,
-		LAG(order_amount, 1) over(partition by customer_id order by order_date) as prev_amount,
-		row_number() over(partition by customer_id order by order_date desc) as rnk
-	FROM food_orders
-)t where rnk = 1;
-
 SELECT * FROM(
 	SELECT * ,
-		FIRST_VALUE(order_amount) OVER(PARTITION BY customer_id ORDER BY order_date desc rows between unbounded preceding and unbounded following) AS first_order_value,
-        ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY order_date DESC) AS rnk
+		LAG(order_amount, 1) OVER(PARTITION BY customer_id ORDER BY order_date) AS prev_amount,
+		ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY order_date DESC) AS rnk
 	FROM food_orders
-)t;
+)t WHERE rnk = 1;

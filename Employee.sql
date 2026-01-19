@@ -818,6 +818,19 @@ inner join projects p on e.id = p.EmpID
 where e.department_id is null;
 
 -- *93. Find employees who are working on projects across different departments. (e.g., employee belongs to IT but also has projects under employees from HR/Finance.)
+-- CTE
+WITH joined_table AS(
+	SELECT p.EmpID, p.ProjectId, e.department_id
+    FROM projects p
+    INNER JOIN employees e
+		ON p.EmpId = e.id
+)
+SELECT * 
+FROM joined_table j1
+JOIN joined_table j2
+	ON j1.ProjectId = j2.ProjectId AND j1.EmpId <> j2.EmpId AND j1.department_id <> j2.department_id;
+
+-- JOINS
 SELECT DISTINCT e1.id, e1.name, e1.department_id
 FROM Projects p1
 JOIN Projects p2

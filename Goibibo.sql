@@ -62,3 +62,30 @@ INSERT INTO hotel_bookings VALUES
 (541,27,309,'Snow Peak','Manali',6300,'suite','confirmed','2024-03-31','2024-05-20','2024-05-24'),
 (542,28,310,'Urban Nest','Delhi',3500,'deluxe','confirmed','2024-03-31','2024-05-22','2024-05-25'),
 (543,29,306,'Lake View Inn','Udaipur',5200,'suite','confirmed','2024-03-31','2024-05-24','2024-05-28');
+
+-- 1. Repeat users (confirmed bookings > 1)
+SELECT user_id, status, count(status)
+FROM hotel_bookings
+WHERE status = "confirmed"
+GROUP BY user_id, status
+HAVING count(status) > 1;
+
+-- 2. No-show rate per city
+SELECT city,
+	SUM(CASE WHEN status = "no-show" THEN 1 ELSE 0 END) AS no_show,
+    COUNT(*) AS total_booking,
+    SUM(CASE WHEN status = "no-show" THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS no_show_rate
+FROM hotel_bookings
+GROUP BY city;
+
+-- 3. Average stay duration per hotel
+
+-- 4. Top hotel per city by confirmed revenue
+
+-- 5. Users whose latest booking < previous booking
+
+-- 6. Monthly confirmed booking trend
+SELECT YEAR(booking_date), MONTH(booking_date), COUNT(*)
+FROM hotel_bookings
+WHERE status = "confirmed"
+GROUP BY YEAR(booking_date), MONTH(booking_date);

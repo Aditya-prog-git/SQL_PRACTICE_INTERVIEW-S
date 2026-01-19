@@ -196,10 +196,16 @@ without `GROUP BY`
 
 ---
 
-## ⚠️ Note
+## 🔗 Reference & Credits
 
-Some problems are inspired by public resources and interview preparation material.  
-This repository is maintained purely for **learning and personal practice**.
+This repository was built using **publicly available learning material** for practice and problem exposure.
+
+Special reference:
+
+- **The Grand Complete Data Science Materials – MySQL Interview Section**  
+  https://github.com/krishnaik06/The-Grand-Complete-Data-Science-Materials/tree/main/Complete%20MySQL%20Interview%20Materials
+
+All problems are **re-solved independently** and organized for **long-term interview preparation**.
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%">
 
