@@ -79,10 +79,33 @@ FROM hotel_bookings
 GROUP BY city;
 
 -- 3. Average stay duration per hotel
+SELECT hotel_id, hotel_name, AVG(DATEDIFF(stay_end, stay_start)) as avg_stay_duration
+FROM hotel_bookings
+WHERE status = "confirmed"
+GROUP BY hotel_id, hotel_name;
 
 -- 4. Top hotel per city by confirmed revenue
+SELECT hotel_id, hotel_name, city, revenue
+FROM (
+	SELECT *,
+		DENSE_RANK() OVER(PARTITION BY city ORDER BY revenue DESC) AS rnk
+	FROM (
+		SELECT hotel_id, hotel_name, city, sum(booking_amount) as revenue
+		FROM hotel_bookings
+        WHERE status = "confirmed"
+		GROUP BY hotel_id, hotel_name, city
+	)t 
+)s WHERE s.rnk = 1
+ORDER BY revenue desc;
 
 -- 5. Users whose latest booking < previous booking
+SELECT user_id, latest_booking, prev_booking
+FROM (
+	SELECT user_id, booking_amount as prev_booking,
+		LAG(booking_amount) OVER(PARTITION BY user_id ORDER BY booking_date DESC) AS latest_booking,
+		ROW_NUMBER() over(PARTITION BY user_id ORDER BY booking_date DESC) AS rnk
+	FROM hotel_bookings
+)T WHERE latest_booking < prev_booking AND rnk = 2;
 
 -- 6. Monthly confirmed booking trend
 SELECT YEAR(booking_date), MONTH(booking_date), COUNT(*)
